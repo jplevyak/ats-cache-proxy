@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block title %}Upload new config file{% endblock %}
+
+{% block content %}
+    <h1>Store a new configuration file</h1>
+    <p>(Or update an existing configuration file)</p>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="formheader">Filename (Leave blank to use the name of the
+            selected file unchanged)</div>
+        <div class="formfield"><input type="text" name="name" value="" /></div>
+        <div class="formheader">File</div>
+        <div class="formfield"><input type="file" name="content" /></div>
+        <div class="formfield"><input type="submit"
+            value="Store configuration" /></div>
+    </form>
+{% endblock %}

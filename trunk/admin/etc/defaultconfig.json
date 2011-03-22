@@ -1,0 +1,5 @@
+{ "upload_stats": true,
+  "auto_update": true,
+  "update_server": "omnitiproxytest.appspot.com",
+  "stats_server": "omnitiproxytest.appspot.com"
+}

@@ -1,0 +1,9 @@
+Functions needed on admin interface
+    * Start/Stop proxy
+    * Update configs now (with last check)
+    * Enable/disable sending of stats
+    * Server to update from
+    * Server to send stats to (same server?)
+    * View configuration files
+        * Have the valid config files in a list (or dict if a friendly name is
+        desired) to make it easily updateable

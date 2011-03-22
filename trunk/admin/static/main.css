@@ -1,0 +1,34 @@
+body {
+    font-family: Arial, helvetica, sans-serif;
+    font-size: 80%;
+}
+
+.section {
+    margin: 1em;
+    padding: 1em;
+    border: 1px solid black;
+}
+
+.proxy_state_stopped { color: red; }
+.proxy_state_started { color: green; }
+.proxy_state_stopping { color: #666600; }
+.proxy_state_starting { color: #666600; }
+
+#message {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    padding: 0.5em 1em;
+    background: #aaa;
+    color: #fff;
+    border-bottom: 1px solid black;
+    font-size: 1.2em;
+    font-weight: bold;
+    text-align: center;
+}
+
+#update-output {
+    display: none;
+}

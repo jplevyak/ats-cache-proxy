@@ -1,0 +1,4 @@
+# Send proxy stats
+0 2 * * * root /www/bin/stats.py
+# Update configuration
+0 1 * * * root /www/bin/update_config.py
