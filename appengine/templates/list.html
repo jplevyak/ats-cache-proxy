@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block title %}File List{% endblock %}
+
+{% block content %}
+    <h1>Uploaded Config Files</h1>
+    <table>
+        <tr>
+            <th>Filename</th>
+            <th>Version</th>
+        </tr>
+    {% for i in config_files %}
+        <tr>
+            <td><a href="/fetch?name={{ i.0 }}">{{ i.0 }}</a></td>
+            <td>{{ i.1 }}</td>
+        </tr>
+    {% endfor %}
+    </table>
+{% endblock %}

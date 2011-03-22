@@ -1,0 +1,4 @@
+index.yaml
+google_appengine
+*.swp
+*.pyc

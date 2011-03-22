@@ -1,0 +1,91 @@
+Directory layout
+================
+
+admin                   - Admin web console
+appengine               - Code for web service
+client_scripts          - Scripts that interact with the web service
+install                 - Installation script/configs
+trafficserver_cacheurl  - Traffic server plugin to modify the cache key
+
+Installation instructions
+=========================
+
+The following ubuntu packages are required for trafficserver, and the package
+included here is built for Ubuntu Maverick:
+
+    libexpat1
+    libpcre3
+    libpcre3-dev
+    libsqlite3-0
+    libssl0.9.8
+    tcl8.4
+
+With the exception of libpcre3-dev, most of these packages should be
+installed by default on Ubuntu.
+
+You are now ready to install gproxy/traffic server
+    cd install
+    sudo ./install_gproxy.sh
+
+Any errors and command output will be logged to install.log.
+
+DD-WRT iptables rules installation
+==================================
+
+If you will be running a DD-WRT install and routing all requests
+for web content through the proxy server, here is an overview of how
+to configure iptables and run a heart beat script that routinely
+checks to make certain that the proxy server is running.
+
+Record the IP address of your proxy server, as well as the port you
+are running traffic server on.  By default Traffic Server will be
+running on port 8080.
+
+Log into DD-WRT and navigate to the Administration -> Commands tab.  
+Click "Edit" and the top input area should become editable.  At this 
+point, the Commands area should be empty and there should be
+nothing below it but the various Save buttons.  Edit the script below
+to match the proxy IP and port settings you've recorded, then paste
+the contents in the Commands area, but this time press "Save Custom
+Script" instead.  We do this because we don't want it to just run once
+at startup.  We'll run it once per minute from cron instead.  To set
+that up, navigate to the Management sub-tab within Administration.  In
+the section called "Cron", enable cron if it is disabled, and in the
+"Additional cron jobs" area, paste:
+
+* * * * * root /tmp/custom.sh
+
+and then press "Save" at the bottom of the page.  Now the router will
+run the script every minute.  It will check to see that the proxy
+server is up and listening.  If it's up, and the iptables rules don't
+exist, it will add them (this should happen the first time the script
+runs on a new setup.)  If the proxy server goes down, it will remove
+the redirect and web traffic will flow directly out the router.
+
+Proxy heartbeat iptables rules / script
+=======================================
+#!/bin/sh
+PROXY_IP=IP Address 
+PROXY_PORT=8080
+LAN_IP=`nvram get lan_ipaddr`
+LAN_NET=$LAN_IP/`nvram get lan_netmask`
+
+# Set IPTABLES_STATUS to 0 if gproxy is currently configured.                 
+iptables -L FORWARD | grep "tcp dpt:webcache" > /dev/null; IPTABLES_STATUS=$?;
+                                                   
+echo "" | nc -w 0 $PROXY_IP $PROXY_PORT > /dev/null                       
+if [ $? -eq 0 ]; then   # Proxy device is up, add the config if necessary.
+    if [ $IPTABLES_STATUS -ne 0 ]; then                                                          
+        iptables -t nat -A PREROUTING -i br0 -s $LAN_NET -d $LAN_NET -p tcp --dport 80 -j ACCEPT;                
+        iptables -t nat -A PREROUTING -i br0 -s ! $PROXY_IP -p tcp --dport 80 -j DNAT --to $PROXY_IP:$PROXY_PORT;
+        iptables -t nat -I POSTROUTING -o br0 -s $LAN_NET -d $PROXY_IP -p tcp -j SNAT --to $LAN_IP;     
+        iptables -I FORWARD -i br0 -o br0 -s $LAN_NET -d $PROXY_IP -p tcp --dport $PROXY_PORT -j ACCEPT;
+    fi                                                                        
+else    # Proxy device is not running.  Delete the configuration if necessary.
+    if [ $IPTABLES_STATUS -eq 0 ]; then                                                          
+        iptables -t nat -D PREROUTING -i br0 -s $LAN_NET -d $LAN_NET -p tcp --dport 80 -j ACCEPT;                
+        iptables -t nat -D PREROUTING -i br0 -s ! $PROXY_IP -p tcp --dport 80 -j DNAT --to $PROXY_IP:$PROXY_PORT;
+        iptables -t nat -D POSTROUTING -o br0 -s $LAN_NET -d $PROXY_IP -p tcp -j SNAT --to $LAN_IP;              
+        iptables -D FORWARD -i br0 -o br0 -s $LAN_NET -d $PROXY_IP -p tcp --dport $PROXY_PORT -j ACCEPT;
+    fi                                                                                                  
+fi
