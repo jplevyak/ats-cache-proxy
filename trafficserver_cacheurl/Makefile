@@ -1,13 +1,10 @@
 TSPREFIX=/opt/ts
-CFLAGS=-g -I$(TSPREFIX)/include -fPIC
+TSXS=$(TSPREFIX)/bin/tsxs
 
-%.o: %.c
-	$(CC) $(CFLAGS) -c $<
-
-%.so: %.o
-	$(CC) -shared $< -o $@
+%.so: %.c
+	$(TSXS) -c $< -o $@
 
 all: cacheurl.so
 
 clean:
-	rm -f *.o *.so
+	rm -f *.lo *.so
