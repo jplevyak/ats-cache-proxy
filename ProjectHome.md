@@ -1,0 +1,1 @@
+Caching proxy appliance designed for use over high latency connections with a focus on being able to cache google maps and youtube data.
